@@ -8,6 +8,7 @@ import generating_transactions
 
 
 
+#environment has an object of simulator
 class simulator():
   def __init__(self,
                src,trg,channel_id,
@@ -44,7 +45,7 @@ class simulator():
 
  
 
-  def calculate_weight(self,edge,amount): #assuming edge is a row of dataframe
+  def calculate_weight(self,edge,amount): 
     return edge[2] + edge[1]*amount 
     
 
@@ -77,12 +78,12 @@ class simulator():
       
       if (src_trg_balance <= self.amount) and (self.graph.has_edge(src,trg)):
         self.graph.remove_edge(src,trg)
-      else : 
+      elif (src_trg_balance > self.amount) and (not self.graph.has_edge(src,trg)): 
         self.graph.add_edge(src, trg, weight = self.calculate_weight(src_trg, self.amount))
       
-      if (trg_src_balance <= self.amount) and (self.graph.has_edge(trg,src)) :
+      if (trg_src_balance <= self.amount) and (self.graph.has_edge(trg,src)):
         self.graph.remove_edge(trg,src)
-      else :   
+      elif (trg_src_balance > self.amount) and (not self.graph.has_edge(trg,src)): 
         self.graph.add_edge(trg, src, weight = self.calculate_weight(trg_src, self.amount))
       
     
@@ -100,7 +101,7 @@ class simulator():
       for i in range(len(path)-1) :
         src = path[i]
         trg = path[i+1]
-        if (self.is_active_channel(src, trg)) or (self.is_active_channel(trg, src)) :
+        if (self.is_active_channel(src, trg))) :
           self.update_active_channels(src,trg,transaction_amount)
           self.update_graph(src, trg)
           
@@ -301,7 +302,7 @@ class simulator():
       return 0,0  # no rebalancing
     elif gamma > 0 :
       rebalancing_type = -1 #clockwise
-      result_bit,cheapest_rebalancing_path, alpha_bar, beta_bar = self.find_rebalancing_cycle(rebalancing_type, src, trg, channel_id, gamma)
+      result_bit, cheapest_rebalancing_path, alpha_bar, beta_bar = self.find_rebalancing_cycle(rebalancing_type, src, trg, channel_id, gamma)
       if result_bit == 1 :
         cost = alpha_bar*gamma + beta_bar
         if cost <= onchain_transaction_fee:
