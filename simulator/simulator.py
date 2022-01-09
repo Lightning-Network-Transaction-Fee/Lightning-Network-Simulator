@@ -101,7 +101,7 @@ class simulator():
       for i in range(len(path)-1) :
         src = path[i]
         trg = path[i+1]
-        if (self.is_active_channel(src, trg))) :
+        if (self.is_active_channel(src, trg)) :
           self.update_active_channels(src,trg,transaction_amount)
           self.update_graph(src, trg)
           
