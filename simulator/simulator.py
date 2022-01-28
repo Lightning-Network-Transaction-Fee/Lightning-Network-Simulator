@@ -19,7 +19,8 @@ class simulator():
                epsilon,
                node_variables,
                active_providers,
-               fixed_transactions = True):
+               fixed_transactions = True,
+               with_onchain_rebalancing = False):
     
     self.src = src
     self.trg = trg
@@ -34,7 +35,7 @@ class simulator():
     self.active_channels = active_channels
     self.network_dictionary = network_dictionary
     self.fixed_transactions = fixed_transactions
-
+    self.with_onchain_rebalancing = with_onchain_rebalancing
     self.graph = self.generate_graph(amount)
 
     if fixed_transactions : 
@@ -245,6 +246,20 @@ class simulator():
     return alpha_bar,beta_bar
 
 
+  def get_excluded_total_fee(self,path, excluded_src, excluded_trg) :
+    self.sync_network_dictionary()
+    alpha_bar = 0
+    beta_bar = 0
+    for i in range(len(path)-1):
+      src = path[i]
+      trg = path[i+1]
+      if (src!=excluded_src) or (trg!=excluded_trg) :
+        src_trg = self.network_dictionary[(src,trg)]
+        alpha_bar += src_trg[1]
+        beta_bar += src_trg[2]
+    return alpha_bar,beta_bar
+
+
 
   def find_rebalancing_cycle(self,rebalancing_type, src, trg, channel_id, rebalancing_amount):
       rebalancing_graph = self.generate_graph(rebalancing_amount)  
@@ -264,7 +279,8 @@ class simulator():
             return -5,None,0,0
           elif result_bit == 1 :
             cheapest_rebalancing_path.append(src)
-            alpha_bar,beta_bar = self.get_total_fee(cheapest_rebalancing_path)
+            #alpha_bar,beta_bar = self.get_total_fee(cheapest_rebalancing_path)
+            alpha_bar,beta_bar = self.get_excluded_total_fee(cheapest_rebalancing_path,src,trg)
             
 
       elif rebalancing_type == -2 : #counter-clockwise
@@ -277,7 +293,8 @@ class simulator():
             return -7,None,0,0
           elif result_bit == 1 :
             cheapest_rebalancing_path.insert(0,src)
-            alpha_bar,beta_bar = self.get_total_fee(cheapest_rebalancing_path)
+            #alpha_bar,beta_bar = self.get_total_fee(cheapest_rebalancing_path)
+            alpha_bar,beta_bar = self.get_excluded_total_fee(cheapest_rebalancing_path,src,trg)
             
    
       
@@ -297,6 +314,15 @@ class simulator():
 
 
   def operate_rebalancing(self,gamma,src,trg,channel_id,onchain_transaction_fee):
+    if self.with_onchain_rebalancing==True :
+        return self.operate_rebalancing_with_onchain(gamma,src,trg,channel_id,onchain_transaction_fee)
+    else :
+        return self.operate_rebalancing_without_onchain(gamma,src,trg,channel_id)
+
+
+
+
+  def operate_rebalancing_with_onchain(self,gamma,src,trg,channel_id,onchain_transaction_fee):
     fee = 0
     if gamma == 0 :
       return 0,0  # no rebalancing
@@ -340,3 +366,33 @@ class simulator():
         rebalancing_type = -3
 
       return fee, rebalancing_type
+
+
+
+  def operate_rebalancing_without_onchain(self,gamma,src,trg,channel_id):
+    fee = 0
+    if gamma == 0 :
+      return 0,0  # no rebalancing
+
+
+    elif gamma > 0 :
+      rebalancing_type = -1 #clockwise
+      result_bit, cheapest_rebalancing_path, alpha_bar, beta_bar = self.find_rebalancing_cycle(rebalancing_type, src, trg, channel_id, gamma)
+      if result_bit == 1 :
+          self.update_network_data(cheapest_rebalancing_path, gamma)
+          fee = cost
+      elif result_bit == -1 :
+          fee, rebalancing_type = 0 , -10 # clockwise failed
+
+    else :
+      rebalancing_type = -2 #counter-clockwise
+      gamma = gamma*-1    
+      result_bit,cheapest_rebalancing_path, alpha_bar, beta_bar = self.find_rebalancing_cycle(rebalancing_type, src, trg, channel_id, gamma)
+      if result_bit == 1 :
+          self.update_network_data(cheapest_rebalancing_path, gamma)
+          fee = cost
+      elif result_bit == -1: 
+          fee, rebalancing_type = 0 , -20 # counter-clockwise failed
+
+    return fee, rebalancing_type
+
