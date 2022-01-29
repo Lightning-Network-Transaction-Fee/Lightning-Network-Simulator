@@ -72,28 +72,30 @@ class simulator():
 
 
   def update_graph(self, src, trg):
-      src_trg = self.active_channels[(src,trg)]
-      src_trg_balance = src_trg[0]
-      trg_src = self.active_channels[(trg,src)]
-      trg_src_balance = trg_src[0]
-      
-      if (src_trg_balance <= self.amount) and (self.graph.has_edge(src,trg)):
-        self.graph.remove_edge(src,trg)
-      elif (src_trg_balance > self.amount) and (not self.graph.has_edge(src,trg)): 
-        self.graph.add_edge(src, trg, weight = self.calculate_weight(src_trg, self.amount))
-      
-      if (trg_src_balance <= self.amount) and (self.graph.has_edge(trg,src)):
-        self.graph.remove_edge(trg,src)
-      elif (trg_src_balance > self.amount) and (not self.graph.has_edge(trg,src)): 
-        self.graph.add_edge(trg, src, weight = self.calculate_weight(trg_src, self.amount))
-      
+      if self.is_active_channel(src,trg) :
+        src_trg = self.active_channels[(src,trg)]
+        src_trg_balance = src_trg[0]
+        trg_src = self.active_channels[(trg,src)]
+        trg_src_balance = trg_src[0]
+        
+        if (src_trg_balance <= self.amount) and (self.graph.has_edge(src,trg)):
+          self.graph.remove_edge(src,trg)
+        elif (src_trg_balance > self.amount) and (not self.graph.has_edge(src,trg)): 
+          self.graph.add_edge(src, trg, weight = self.calculate_weight(src_trg, self.amount))
+        
+        if (trg_src_balance <= self.amount) and (self.graph.has_edge(trg,src)):
+          self.graph.remove_edge(trg,src)
+        elif (trg_src_balance > self.amount) and (not self.graph.has_edge(trg,src)): 
+          self.graph.add_edge(trg, src, weight = self.calculate_weight(trg_src, self.amount))
+        
     
   
 
 
   def update_active_channels(self, src, trg, transaction_amount):
-      self.active_channels[(src,trg)][0] = self.active_channels[(src,trg)][0] - transaction_amount
-      self.active_channels[(trg,src)][0] = self.active_channels[(trg,src)][0] + transaction_amount
+      if self.is_active_channel(src,trg) :
+        self.active_channels[(src,trg)][0] = self.active_channels[(src,trg)][0] - transaction_amount
+        self.active_channels[(trg,src)][0] = self.active_channels[(trg,src)][0] + transaction_amount
 
 
 
@@ -114,11 +116,12 @@ class simulator():
         
 
   def onchain_rebalancing(self,onchain_rebalancing_amount,src,trg,channel_id):
-    self.active_channels[(src,trg)][0] += onchain_rebalancing_amount  
-    self.active_channels[(src,trg)][3] += onchain_rebalancing_amount   
-    self.active_channels[(trg,src)][3] += onchain_rebalancing_amount   
-    self.update_graph(src, trg)
-                
+    if self.is_active_channel(src,trg) :
+      self.active_channels[(src,trg)][0] += onchain_rebalancing_amount  
+      self.active_channels[(src,trg)][3] += onchain_rebalancing_amount   
+      self.active_channels[(trg,src)][3] += onchain_rebalancing_amount   
+      self.update_graph(src, trg)
+                  
 
 
 
@@ -139,9 +142,10 @@ class simulator():
       beta = action[1]
       self.network_dictionary[(src,trg)][1] = alpha
       self.network_dictionary[(src,trg)][2] = beta
-      self.active_channels[(src,trg)][1] = alpha
-      self.active_channels[(src,trg)][2] = beta
-      
+      if self.is_active_channel(src,trg) :
+        self.active_channels[(src,trg)][1] = alpha
+        self.active_channels[(src,trg)][2] = beta
+        
 
 
   def run_single_transaction(self,
