@@ -172,3 +172,7 @@ def get_init_parameters(providers,directed_edges,src,trg,channel_id, capacity, i
       print('zero providers!')
 
     return active_channels, network_dictionary, node_variables, active_providers
+
+
+def check_print(id) :
+    print('Simulator ID is : ', id)
