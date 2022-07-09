@@ -36,7 +36,7 @@ class simulator():
     self.graphs_dict = self.generate_graphs_dict(transaction_types)
 
     if fixed_transactions : 
-      self.transactions_dict = self.generate_transactions_dict(self, transaction_types, node_variables, active_providers)
+      self.transactions_dict = self.generate_transactions_dict(transaction_types, node_variables, active_providers)
     else :
       self.transactions_dict = None
  
