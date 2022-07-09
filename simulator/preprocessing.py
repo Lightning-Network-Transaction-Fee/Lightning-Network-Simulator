@@ -2,7 +2,6 @@ import networkx as nx
 import pandas as pd
 import json
 
-
 def aggregate_edges(directed_edges):
     """aggregating multiedges"""
     grouped = directed_edges.groupby(["src","trg"])
@@ -17,7 +16,6 @@ def aggregate_edges(directed_edges):
     }).reset_index()
     return directed_aggr_edges
 
-
 def get_neighbors(G,src,radius):
   """localazing the networke around the node"""
   neighbors = [src]
@@ -28,7 +26,6 @@ def get_neighbors(G,src,radius):
       outer_list += inner_list
     neighbors += outer_list
   return set(neighbors)
-
 
 def initiate_balances(directed_edges, approach = 'half') :
     '''
@@ -54,7 +51,6 @@ def initiate_balances(directed_edges, approach = 'half') :
 
         
     return G
-
 
 def set_channels_balances(edges,src,trgs,channel_ids,capacities,initial_balances):
     if (len(trgs)==len(capacities)) & (len(trgs)==len(initial_balances)):
@@ -86,7 +82,6 @@ def create_network_dictionary(G):
 
     return network_dictionary
 
-
 def create_active_channels(network_dictionary,channels):
     # channels = [(src1,trg1),(src2,trg2),...]
     active_channels = dict()
@@ -94,7 +89,6 @@ def create_active_channels(network_dictionary,channels):
       active_channels[(src,trg)] = network_dictionary[(src,trg)]
       active_channels[(trg,src)] = network_dictionary[(trg,src)]
     return active_channels
-
 
 def create_sub_network(directed_edges,providers,src,trgs,channel_ids,capacities,initial_balances,radius):
   """creating network_dictionary, edges and providers for the local subgraph."""
@@ -112,8 +106,6 @@ def create_sub_network(directed_edges,providers,src,trgs,channel_ids,capacities,
 
   return network_dictionary, sub_nodes, sub_providers, sub_edges
 
-
-
 def init_node_params(edges, providers, verbose=True):
     """Initialize source and target distribution of each node in order to draw transaction at random later."""
     G = nx.from_pandas_edgelist(edges, source="src", target="trg", edge_attr=["capacity"], create_using=nx.DiGraph())
@@ -127,7 +119,6 @@ def init_node_params(edges, providers, verbose=True):
     node_variables = degrees.merge(total_capacity, on="pub_key")
     return node_variables, active_providers, active_ratio
 
-
 def get_providers(providers_path):
     # The path should direct this to a json file containing providers
     with open(providers_path) as f:
@@ -137,12 +128,10 @@ def get_providers(providers_path):
         providers.append(tmp_json[i].get('pub_key'))
     return providers
 
-
 def get_directed_edges(directed_edges_path) : 
   directed_edges = pd.read_pickle(directed_edges_path)
   directed_edges = aggregate_edges(directed_edges)
   return directed_edges
-
 
 def select_node(directed_edges,src_index):
   src = directed_edges.iloc[src_index]['src']
@@ -150,7 +139,6 @@ def select_node(directed_edges,src_index):
   channel_ids = directed_edges.loc[(directed_edges['src']==src)]['channel_id']
   number_of_channels = len(trgs)
   return src, list(trgs), list(channel_ids) , number_of_channels
-
 
 def get_init_parameters(providers,directed_edges,src,trgs,channel_ids, capacities, initial_balances,subgraph_radius,channels) : 
     
@@ -162,7 +150,6 @@ def get_init_parameters(providers,directed_edges,src,trgs,channel_ids, capacitie
       print('zero providers!')
 
     return active_channels, network_dictionary, node_variables, active_providers
-
 
 def generate_transaction_types(number_of_transaction_types, counts, amounts, epsilons):
     transaction_types = []
