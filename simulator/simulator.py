@@ -83,26 +83,27 @@ class simulator():
 
 
 
-  def update_graph(self, src, trg, transaction_amount):
-      graph = self.graphs_dict[transaction_amount]  
-      if self.is_active_channel(src,trg):
-          src_trg = self.active_channels[(src,trg)]
-          src_trg_balance = src_trg[0]
-          trg_src = self.active_channels[(trg,src)]
-          trg_src_balance = trg_src[0]
-          
-          if (src_trg_balance <= transaction_amount) and (graph.has_edge(src,trg)):
-            graph.remove_edge(src,trg)
-          elif (src_trg_balance > transaction_amount) and (not graph.has_edge(src,trg)): 
-            graph.add_edge(src, trg, weight = self.calculate_weight(src_trg, transaction_amount))
-          
-          if (trg_src_balance <= transaction_amount) and (graph.has_edge(trg,src)):
-            graph.remove_edge(trg,src)
-          elif (trg_src_balance > transaction_amount) and (not graph.has_edge(trg,src)): 
-            graph.add_edge(trg, src, weight = self.calculate_weight(trg_src, transaction_amount))
+  def update_graphs(self, src, trg):
+      for (count,amount,epsilon) in self.transaction_types:
+          graph = self.graphs_dict[amount]  
+          if self.is_active_channel(src,trg):
+              src_trg = self.active_channels[(src,trg)]
+              src_trg_balance = src_trg[0]
+              trg_src = self.active_channels[(trg,src)]
+              trg_src_balance = trg_src[0]
+              
+              if (src_trg_balance <= amount) and (graph.has_edge(src, trg)):
+                graph.remove_edge(src, trg)
+              elif (src_trg_balance > amount) and (not graph.has_edge(src,trg)): 
+                graph.add_edge(src, trg, weight = self.calculate_weight(src_trg, amount))
+              
+              if (trg_src_balance <= amount) and (graph.has_edge(trg,src)):
+                graph.remove_edge(trg, src)
+              elif (trg_src_balance > amount) and (not graph.has_edge(trg,src)): 
+                graph.add_edge(trg, src, weight = self.calculate_weight(trg_src, amount))
 
-      self.graphs_dict[transaction_amount] = graph
-        
+          self.graphs_dict[amount] = graph
+            
     
   
 
@@ -111,8 +112,7 @@ class simulator():
       if self.is_active_channel(src,trg) :
         self.active_channels[(src,trg)][0] = self.active_channels[(src,trg)][0] - transaction_amount
         self.active_channels[(trg,src)][0] = self.active_channels[(trg,src)][0] + transaction_amount
-        # TODO : adding reward
-
+        
 
 
 
@@ -122,7 +122,7 @@ class simulator():
         trg = path[i+1]
         if (self.is_active_channel(src, trg)) :
           self.update_active_channels(src,trg,transaction_amount)
-          self.update_graph(src, trg, transaction_amount)
+          self.update_graphs(src, trg)
           
           
             
@@ -132,7 +132,7 @@ class simulator():
         
 
 
-  def onchain_rebalancing(self,onchain_rebalancing_amount,src,trg,channel_id):
+  def onchain_rebalancing(self, onchain_rebalancing_amount, src, trg, channel_id):
     if self.is_active_channel(src,trg) :
       self.active_channels[(src,trg)][0] += onchain_rebalancing_amount  
       self.active_channels[(src,trg)][3] += onchain_rebalancing_amount   
@@ -222,8 +222,7 @@ class simulator():
 
 
   def run_simulation_for_each_transaction_type(self, count, amount, epsilon, action):  
-      graph = self.preprocess_amount_graph(amount,action)
-      
+      graph = self.preprocess_amount_graph(amount, action)
 
       #Run Transactions
       if self.fixed_transactions : 
@@ -235,12 +234,12 @@ class simulator():
       for index, transaction in transactions.iterrows(): 
         src,trg = transaction['src'], transaction['trg']
         if (not src in graph.nodes()) or (not trg in graph.nodes()):
-          path,result_bit, info = [], 1, {'src and/or trg dont exist in the graph'}
+          path, result_bit, info = [], -1, {'src and/or trg dont exist in the graph'}
         else : 
-          path,result_bit, info = self.run_single_transaction(transaction['transaction_id'], amount, transaction['src'], transaction['trg'], graph) 
+          path, result_bit, info = self.run_single_transaction(transaction['transaction_id'], amount, transaction['src'], transaction['trg'], graph) 
           
         if result_bit == 1 : #successful transaction
-            self.update_network_data(path,amount)
+            self.update_network_data(path, amount)
             transactions.at[index,"result_bit"] = 1
             transactions.at[index,"path"] = path
 
