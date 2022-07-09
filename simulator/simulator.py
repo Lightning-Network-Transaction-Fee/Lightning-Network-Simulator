@@ -36,7 +36,7 @@ class simulator():
     self.graphs_dict = self.generate_graphs_dict(transaction_types)
 
     if fixed_transactions : 
-      self.transactions_dict = self.generate_transactions_dict(transaction_types, node_variables, active_providers)
+      self.transactions_dict = self.generate_transactions_dict(src, transaction_types, node_variables, active_providers)
     else :
       self.transactions_dict = None
  
@@ -54,10 +54,10 @@ class simulator():
       self.network_dictionary[(trg,src)] = self.active_channels[(trg,src)]
 
 
-  def generate_transactions_dict(self, transaction_types, node_variables, active_providers):
+  def generate_transactions_dict(self, src, transaction_types, node_variables, active_providers):
     transactions_dict = dict()
     for (count, amount, epsilon) in transaction_types :
-        trs = generating_transactions.generate_transactions(amount, count, node_variables, epsilon, active_providers)
+        trs = generating_transactions.generate_transactions(src, amount, count, node_variables, epsilon, active_providers, verbose=False, exclude_src=True)
         transactions_dict[amount] = trs
     return transactions_dict
 
@@ -228,7 +228,7 @@ class simulator():
       if self.fixed_transactions : 
         transactions = self.transactions_dict[amount]
       else :
-        transactions = generating_transactions.generate_transactions(amount, count, self.node_variables, epsilon, self.active_providers)
+        transactions = generating_transactions.generate_transactions(self.src, amount, count, self.node_variables, epsilon, self.active_providers, verbose=False, exclude_src=True)
       transactions = transactions.assign(path=None)
       transactions['path'] = transactions['path'].astype('object')
       for index, transaction in transactions.iterrows(): 
