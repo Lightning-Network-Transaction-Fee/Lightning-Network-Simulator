@@ -19,6 +19,8 @@ A simulator for Lightning Network, mainly concentrated on transaction fee experi
 
 1. Inputs daily Lightning Network Snapshots.
 
-2. Supports Offchain rebalancing.
+2. Supports off-chain rebalancing.
 
-3. 
+3. Supports multi channel fee setting.
+
+4. Simulates random transactions.
