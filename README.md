@@ -12,9 +12,6 @@
 </div>
 
 
-
-## Simulator Perspective
-
 A simulator for Lightning Network, mainly concentrated on transaction fee experimentations.
 
 1. Inputs daily Lightning Network Snapshots.
