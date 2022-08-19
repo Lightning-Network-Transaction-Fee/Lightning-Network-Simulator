@@ -1,5 +1,13 @@
 # Lightning-Network-Simulator
 
+<div align="center">
+
+[![Made with Python](https://img.shields.io/badge/Python->=3.6-blue?logo=python&logoColor=white)](https://python.org "Go to Python homepage")
+
+</div>
+
+
+
 ## Simulator Perspective
 
 1. real-world, up-to-date data of Lightning Network topology (and flow)
