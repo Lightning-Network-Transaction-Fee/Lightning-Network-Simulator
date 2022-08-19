@@ -1,9 +1,11 @@
 # Lightning-Network-Simulator
 
-<div align="center">
+<div>
 
 [![Made with Python](https://img.shields.io/badge/Python->=3.6-blue?logo=python&logoColor=white)](https://python.org "Go to Python homepage")
+[![NetworkX - NetworkX](https://img.shields.io/badge/NetworkX-NetworkX-2ea44f)](https://networkx.org/)
 
+	
 </div>
 
 
